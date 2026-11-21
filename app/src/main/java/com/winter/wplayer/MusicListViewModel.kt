@@ -28,8 +28,6 @@ class MusicListViewModel(
 ): AndroidViewModel(app) {
     private var _loaded = false
     private val dataStore = app.dataStore
-
-
     private val sortPrefs = dataStore.data.map {
         (it[ConfigHolder.SONG_ORDER] ?: "TITLE") to (it[ConfigHolder.SONG_SORT] ?: "ASC")
     }
@@ -41,7 +39,6 @@ class MusicListViewModel(
             initialValue = "TITLE" to "ASC"
         )
 
-
     val songLists: StateFlow<List<Song>> =
         combine(repo.getAllSongs(), sortPrefs) { songs, (order, sort) ->
             songs.sortedWith(comparatorFor(order, sort))
@@ -50,8 +47,15 @@ class MusicListViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+    val songListsIsEmpty: StateFlow<Boolean> =
+        songLists.map { it.isEmpty() }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = true
+            )
 
-    val mediaItemLists: StateFlow<List<MediaItem>> =
+    /* val mediaItemLists: StateFlow<List<MediaItem>> =
         songLists.map { songs ->
                 songs.map { song ->
                     MediaItem.Builder()
@@ -64,7 +68,7 @@ class MusicListViewModel(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
-            )
+            )*/
 
     val playlists = repo
         .getAllPlaylists()

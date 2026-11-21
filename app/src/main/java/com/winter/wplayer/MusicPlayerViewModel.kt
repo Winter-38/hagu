@@ -26,8 +26,8 @@ class MusicPlayerViewModel(app: Application): AndroidViewModel(app) {
     }
     private val buildMutex = Mutex()
 
-    private var queueIds: List<String> = emptyList()
-    private var restored = false
+    //private var queueIds: List<String> = emptyList()
+    //private var restored = false
     private var _controller = MutableStateFlow<MediaController?>(null)
     val controller = _controller.asStateFlow()
 
@@ -164,25 +164,16 @@ class MusicPlayerViewModel(app: Application): AndroidViewModel(app) {
         }
     } */
 
-    fun playSong(song: Song) {
+    fun playSong(songs: List<Song>, index: Int) {
         val controller = _controller.value ?: return
-        val mediaId = song.songId.toString()
-
-        val index = (0 until controller.mediaItemCount).firstOrNull {
-            controller.getMediaItemAt(it).mediaId == mediaId
+        val mediaItems = songs.map {
+            MediaItem.Builder()
+                .setMediaId(it.songId.toString())
+                .setUri(it.uri)
+                .build()
         }
-        if (index != null) {
-            controller.seekTo(index, 0L)
-        } else {
-            controller.addMediaItem(
-                MediaItem.Builder()
-                    .setMediaId(mediaId)
-                    .setUri(song.uri)
-                    .build()
-            )
-            controller.prepare()
-            controller.seekTo(controller.mediaItemCount - 1, 0L)
-        }
+        controller.setMediaItems(mediaItems)
+        controller.seekTo(index, 0L)
         controller.play()
     }
 

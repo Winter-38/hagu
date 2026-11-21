@@ -17,7 +17,7 @@ class PlaybackService: MediaSessionService() {
 
     private val listener = object: Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            IndexHolder.update(mediaItem?.mediaId)
+            IndexHolder.update(player.currentMediaItemIndex)
         }
     }
     override fun onCreate() {
@@ -40,10 +40,10 @@ class PlaybackService: MediaSessionService() {
     }
 }
 object IndexHolder {
-    private val _currentMediaId = MutableStateFlow<String?>(null)
-    val currentMediaId = _currentMediaId.asStateFlow()
+    private val _currentIndex = MutableStateFlow(0)
+    val currentIndex = _currentIndex.asStateFlow()
 
-    fun update(value: String?){
-        _currentMediaId.value = value
+    fun update(value: Int){
+        _currentIndex.value = value
     }
 }

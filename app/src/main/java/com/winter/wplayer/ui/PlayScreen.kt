@@ -58,10 +58,9 @@ fun PlayScreen(onBack: () -> Unit) {
     val musicPlayerViewModel: MusicPlayerViewModel = viewModel(viewModelStoreOwner = activity)
 
     val songs by musicListViewModel.songLists.collectAsStateWithLifecycle()
-    val currentMediaId by IndexHolder.currentMediaId.collectAsStateWithLifecycle()
-    val currentSong = remember(songs, currentMediaId) {
-        songs.firstOrNull { it.songId.toString() == currentMediaId }
-    }
+    val isEmpty by musicListViewModel.songListsIsEmpty.collectAsStateWithLifecycle()
+    val currentIndex by IndexHolder.currentIndex.collectAsStateWithLifecycle()
+    val currentSong = if (!isEmpty) songs[currentIndex] else null
 
     val controller by musicPlayerViewModel.controller.collectAsStateWithLifecycle()
     val isPlaying by musicPlayerViewModel.isPlaying.collectAsStateWithLifecycle()

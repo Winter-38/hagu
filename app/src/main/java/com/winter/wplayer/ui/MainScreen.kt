@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -222,26 +224,23 @@ fun HomeScreen(
     onNavToPlayScreen: () -> Unit
 ) {
     val songs by musicListViewModel.songLists.collectAsStateWithLifecycle()
+    val isEmpty by musicListViewModel.songListsIsEmpty.collectAsStateWithLifecycle()
     val isPlaying by musicPlayerViewModel.isPlaying.collectAsStateWithLifecycle()
-    val currentMediaId by IndexHolder.currentMediaId.collectAsStateWithLifecycle()
-    val currentSong = remember(songs, currentMediaId) {
-        songs.firstOrNull { it.songId.toString() == currentMediaId }
-    }
+    val currentIndex by IndexHolder.currentIndex.collectAsStateWithLifecycle()
+    val currentSong = if (!isEmpty) songs[currentIndex] else null
 
     Scaffold(
         topBar = { TopBar(musicListViewModel, onNavToSettings) },
         bottomBar = {
-            if (currentSong != null) {
-                MiniPlayerBar(
-                    song = currentSong,
-                    isPlaying = isPlaying == true,
-                    onTogglePlay = {
-                        if (isPlaying == true) musicPlayerViewModel.pause()
+            MiniPlayerBar(
+                song = currentSong,
+                isPlaying = (isPlaying == true),
+                onTogglePlay = {
+                    if (isPlaying == true) musicPlayerViewModel.pause()
                         else musicPlayerViewModel.play()
-                    },
-                    onClick = onNavToPlayScreen
-                )
-            }
+                },
+                onClick = onNavToPlayScreen
+            )
         }
     ) { innerPadding ->
         if (songs.isEmpty()) {
@@ -262,10 +261,10 @@ fun HomeScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(Dimens.listGap)
             ) {
-                items(songs, key = { it.songId }) { song ->
+                itemsIndexed(songs) { index, song ->
                     SongRow(
                         song = song,
-                        onClick = { musicPlayerViewModel.playSong(song) }
+                        onClick = { musicPlayerViewModel.playSong(songs, index) }
                     )
                 }
             }
@@ -275,7 +274,7 @@ fun HomeScreen(
 
 @Composable
 private fun MiniPlayerBar(
-    song: Song,
+    song: Song?,
     isPlaying: Boolean,
     onTogglePlay: () -> Unit,
     onClick: () -> Unit
@@ -299,7 +298,7 @@ private fun MiniPlayerBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             SongCover(
-                coverUri = song.coverUri,
+                coverUri = song?.coverUri,
                 contentDescription = stringResource(R.string.mini_song_cover),
                 size = Dimens.coverMini,
                 shape = MaterialTheme.shapes.small
@@ -307,13 +306,13 @@ private fun MiniPlayerBar(
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = song.title ?: stringResource(R.string.unknown_title),
+                    text = song?.title ?: stringResource(R.string.unknown_title),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = song.artist ?: stringResource(R.string.unknown_artist),
+                    text = song?.artist ?: stringResource(R.string.unknown_artist),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -327,7 +326,7 @@ private fun MiniPlayerBar(
             ) {
                 Icon(
                     painter = if (isPlaying) painterResource(R.drawable.ic_pause)
-                    else painterResource(R.drawable.ic_play_outline),
+                        else painterResource(R.drawable.ic_play_outline),
                     contentDescription = stringResource(
                         if (isPlaying) R.string.pause_button else R.string.play_button
                     )
