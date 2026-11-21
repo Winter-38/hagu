@@ -224,10 +224,10 @@ fun HomeScreen(
     onNavToPlayScreen: () -> Unit
 ) {
     val songs by musicListViewModel.songLists.collectAsStateWithLifecycle()
-    val isEmpty by musicListViewModel.songListsIsEmpty.collectAsStateWithLifecycle()
     val isPlaying by musicPlayerViewModel.isPlaying.collectAsStateWithLifecycle()
+    val controller by musicPlayerViewModel.controller.collectAsStateWithLifecycle()
     val currentIndex by IndexHolder.currentIndex.collectAsStateWithLifecycle()
-    val currentSong = if (!isEmpty) songs[currentIndex] else null
+    val currentSong = if (!songs.isEmpty()) songs[currentIndex] else null
 
     Scaffold(
         topBar = { TopBar(musicListViewModel, onNavToSettings) },
@@ -236,8 +236,12 @@ fun HomeScreen(
                 song = currentSong,
                 isPlaying = (isPlaying == true),
                 onTogglePlay = {
-                    if (isPlaying == true) musicPlayerViewModel.pause()
-                        else musicPlayerViewModel.play()
+                    when {
+                        isPlaying == true -> musicPlayerViewModel.pause()
+                        controller?.mediaItemCount == 0 && songs.isNotEmpty() ->
+                            musicPlayerViewModel.playSong(songs, currentIndex.coerceIn(0, songs.lastIndex))
+                        else -> musicPlayerViewModel.play()
+                    }
                 },
                 onClick = onNavToPlayScreen
             )

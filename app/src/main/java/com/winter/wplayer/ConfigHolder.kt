@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 
@@ -16,4 +17,7 @@ object ConfigHolder {
     val MEDIA_LOADED = booleanPreferencesKey("media_loaded")
     val SONG_ORDER = stringPreferencesKey("song_order")
     val SONG_SORT = stringPreferencesKey("song_sort") //ASC or DESC
+    val QUEUE = stringPreferencesKey("queue") // JSON: [{"id":"...","uri":"..."}]
+    val QUEUE_INDEX = intPreferencesKey("queue_index")
+    val QUEUE_POSITION = longPreferencesKey("queue_position")
 }

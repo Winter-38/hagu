@@ -58,9 +58,8 @@ fun PlayScreen(onBack: () -> Unit) {
     val musicPlayerViewModel: MusicPlayerViewModel = viewModel(viewModelStoreOwner = activity)
 
     val songs by musicListViewModel.songLists.collectAsStateWithLifecycle()
-    val isEmpty by musicListViewModel.songListsIsEmpty.collectAsStateWithLifecycle()
     val currentIndex by IndexHolder.currentIndex.collectAsStateWithLifecycle()
-    val currentSong = if (!isEmpty) songs[currentIndex] else null
+    val currentSong = if (!songs.isEmpty()) songs[currentIndex] else null
 
     val controller by musicPlayerViewModel.controller.collectAsStateWithLifecycle()
     val isPlaying by musicPlayerViewModel.isPlaying.collectAsStateWithLifecycle()
@@ -136,8 +135,12 @@ fun PlayScreen(onBack: () -> Unit) {
                     isShuffleEnabled = isShuffleEnabled == true,
                     repeatMode = repeatMode,
                     onTogglePlay = {
-                        if (isPlaying == true) musicPlayerViewModel.pause()
-                        else musicPlayerViewModel.play()
+                        when {
+                            isPlaying == true -> musicPlayerViewModel.pause()
+                            controller?.mediaItemCount == 0 && songs.isNotEmpty() ->
+                                musicPlayerViewModel.playSong(songs, currentIndex.coerceIn(0, songs.lastIndex))
+                            else -> musicPlayerViewModel.play()
+                        }
                     },
                     onPrevious = { musicPlayerViewModel.seekToPrevious() },
                     onNext = { musicPlayerViewModel.seekToNext() },

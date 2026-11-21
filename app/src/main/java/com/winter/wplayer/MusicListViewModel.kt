@@ -47,28 +47,6 @@ class MusicListViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-    val songListsIsEmpty: StateFlow<Boolean> =
-        songLists.map { it.isEmpty() }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = true
-            )
-
-    /* val mediaItemLists: StateFlow<List<MediaItem>> =
-        songLists.map { songs ->
-                songs.map { song ->
-                    MediaItem.Builder()
-                        .setMediaId(song.songId.toString())
-                        .setUri(song.uri)
-                        .build()
-                }
-            }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList()
-            )*/
 
     val playlists = repo
         .getAllPlaylists()
