@@ -19,14 +19,17 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.LaunchedEffect
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.room.Room
 import com.winter.wplayer.room.AppDataBase
 import com.winter.wplayer.room.PlaylistRepository
 import com.winter.wplayer.ui.HomeScreen
 import com.winter.wplayer.ui.PlayScreen
+import com.winter.wplayer.ui.PlaylistDetailScreen
 import com.winter.wplayer.ui.PlaylistManageScreen
 import com.winter.wplayer.ui.RequestPermission
 import com.winter.wplayer.ui.theme.AppTheme
@@ -144,10 +147,27 @@ class MainActivity : ComponentActivity() {
                     composable("playlist_manage_screen") {
                         PlaylistManageScreen(
                             musicListViewModel = musicListViewModel,
-                            onNavToDetail = { navController.popBackStack() },
-                            onRemove = { m, id ->
-                                m.removePlaylist(id)
+                            onBack = { navController.popBackStack() },
+                            onOpenPlaylist = { playlistId ->
+                                navController.navigate("playlist_detail_screen/$playlistId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onRemove = { playlistId ->
+                                musicListViewModel.removePlaylist(playlistId)
                             }
+                        )
+                    }
+                    composable(
+                        route = "playlist_detail_screen/{playlistId}",
+                        arguments = listOf(navArgument("playlistId") { type = NavType.LongType })
+                    ) { entry ->
+                        val playlistId = entry.arguments?.getLong("playlistId")
+                            ?: return@composable
+                        PlaylistDetailScreen(
+                            playlistId = playlistId,
+                            musicListViewModel = musicListViewModel,
+                            onBack = { navController.popBackStack() }
                         )
                     }
                 }

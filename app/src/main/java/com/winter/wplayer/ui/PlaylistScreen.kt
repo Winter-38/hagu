@@ -2,14 +2,9 @@ package com.winter.wplayer.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,13 +16,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,27 +42,33 @@ import com.winter.wplayer.ui.theme.Dimens
 @Composable
 fun PlaylistManageScreen(
     musicListViewModel: MusicListViewModel,
-    onNavToDetail: () -> Unit,
-    onRemove: (MusicListViewModel, Long) -> Unit
+    onBack: () -> Unit,
+    onOpenPlaylist: (Long) -> Unit,
+    onRemove: (Long) -> Unit
 ) {
     val playlists by musicListViewModel.playlists.collectAsStateWithLifecycle()
-    val songs by musicListViewModel.songLists.collectAsStateWithLifecycle()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // Dialog and sheet state are hoisted out of the list so exactly one of each
-    // can ever be open, and it is always about the tapped playlist.
+    // Dialog state is hoisted out of the list so it is always about the tapped playlist.
     var pendingDelete by remember { mutableStateOf<Playlist?>(null) }
-    var addTarget by remember { mutableStateOf<Playlist?>(null) }
+    var showCreate by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.playlists)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavToDetail) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_left),
                             contentDescription = stringResource(R.string.back_button)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showCreate = true }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add),
+                            contentDescription = stringResource(R.string.create_playlist)
                         )
                     }
                 }
@@ -99,7 +98,7 @@ fun PlaylistManageScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(MaterialTheme.shapes.small)
-                            .clickable { addTarget = playlist },
+                            .clickable { onOpenPlaylist(playlist.playlistId) },
                         colors = ListItemDefaults.colors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                         ),
@@ -134,33 +133,15 @@ fun PlaylistManageScreen(
         }
     }
 
-    addTarget?.let { playlist ->
-        ModalBottomSheet(
-            onDismissRequest = { addTarget = null },
-            sheetState = sheetState
-        ) {
-            Column(Modifier.fillMaxWidth()) {
-                Text(
-                    text = stringResource(R.string.add_songs_to, playlist.name),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(horizontal = Dimens.screenHPadding)
-                )
-                Spacer(Modifier.height(8.dp))
-                Box(Modifier.fillMaxHeight(0.6f)) {
-                    if (songs.isEmpty()) {
-                        EmptyState(text = stringResource(R.string.empty_songs))
-                    } else {
-                        SongItems(
-                            songs = songs,
-                            onSongClick = { song ->
-                                musicListViewModel.addSongToPlaylist(playlist.playlistId, song)
-                                addTarget = null
-                            }
-                        )
-                    }
-                }
+    if (showCreate) {
+        CreatePlayList(
+            show = true,
+            onDismiss = { showCreate = false },
+            onConfirm = { name ->
+                musicListViewModel.createPlaylist(name = name, coverUri = null)
+                showCreate = false
             }
-        }
+        )
     }
 
     pendingDelete?.let { playlist ->
@@ -172,7 +153,7 @@ fun PlaylistManageScreen(
                 TextButton(
                     onClick = {
                         pendingDelete = null
-                        onRemove(musicListViewModel, playlist.playlistId)
+                        onRemove(playlist.playlistId)
                     },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.error

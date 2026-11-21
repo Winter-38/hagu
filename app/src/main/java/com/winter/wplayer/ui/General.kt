@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -78,14 +79,15 @@ fun SongCover(
 @Composable
 fun SongRow(
     song: Song,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    onRemove: (() -> Unit)? = null
 ) {
     ListItem(
         modifier = modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.small)
-            .clickable(onClick = onClick),
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         colors = ListItemDefaults.colors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
@@ -113,12 +115,22 @@ fun SongRow(
             )
         },
         trailingContent = {
-            Icon(
-                painter = painterResource(R.drawable.ic_play_outline),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
+            if (onRemove != null) {
+                IconButton(onClick = onRemove) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_delete_outline),
+                        contentDescription = stringResource(R.string.remove_song),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.ic_play_outline),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     )
 }

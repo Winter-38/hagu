@@ -102,14 +102,7 @@ fun TopBar(musicListViewModel: MusicListViewModel, onNavToSetting: () -> Unit) {
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.create_playlist)) },
-                        onClick = {
-                            menuExpanded = false
-                            showCreate = true
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.settings)) },
+                        text = { Text(stringResource(R.string.playlists)) },
                         onClick = {
                             menuExpanded = false
                             onNavToSetting()

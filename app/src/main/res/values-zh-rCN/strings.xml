@@ -46,8 +46,12 @@
     <string name="settings">设置</string>
 
     <string name="playlists">播放列表</string>
+    <string name="add_songs">添加歌曲</string>
     <string name="add_songs_to">向“%1$s”添加歌曲</string>
+    <string name="remove_song">从播放列表移除</string>
     <string name="now_playing">正在播放</string>
     <string name="empty_songs">还没有歌曲\n点“重新扫描”找找看</string>
     <string name="empty_playlists">还没有播放列表</string>
+    <string name="empty_playlist_songs">这个播放列表还没有歌曲\n点右上角 + 添加</string>
+    <string name="all_songs_added">所有歌曲都已加入这个播放列表</string>
 </resources>
